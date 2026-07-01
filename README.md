@@ -5,7 +5,7 @@
   in a repo named exactly like your GitHub username so it shows on your profile.
 -->
 
-<h3 align="center">[Your Name] / README.md</h3>
+<h3 align="left">Vara693</h3>
 
 ```
                                       ...  .
