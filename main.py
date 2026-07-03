@@ -6,8 +6,21 @@ from lxml import etree
 import time
 import hashlib
 
+# ---------------------------------------------------------------------------
+# SETUP (do this once):
+# 1. Create a GitHub fine-grained Personal Access Token with:
+#      Account permissions:    read:Followers, read:Starring, read:Watching
+#      Repository permissions: read:Commit statuses, read:Contents,
+#                               read:Issues, read:Metadata, read:Pull Requests
+# 2. In your repo -> Settings -> Secrets and variables -> Actions, add:
+#      ACCESS_TOKEN = the token from step 1
+#      USER_NAME    = your GitHub username
+# 3. Update BIRTHDAY below (used for the "Uptime" field).
+# 4. Make sure a `cache/` folder exists in the repo (an empty `cache/.gitkeep`
+#    file is enough) — it's used to avoid re-scanning unchanged repos.
+# ---------------------------------------------------------------------------
 
-BIRTHDAY = datetime.datetime(2006, 1, 18)
+BIRTHDAY = datetime.datetime(2004, 1, 1)  # <-- set your real birthday
 
 HEADERS = {'authorization': 'token ' + os.environ['ACCESS_TOKEN']}
 USER_NAME = os.environ['USER_NAME']
@@ -215,33 +228,25 @@ def stars_counter(data):
 
 
 def svg_overwrite(filename, age_data, commit_data, star_data, repo_data, follower_data, loc_data):
-    """Parse the SVG and update every element by id with real data."""
+    """Parse the SVG and update every element by id with real data.
+
+    NOTE: dots/leader spacing is fixed at SVG-build time (a single value
+    column all fields align to) and is intentionally NOT recalculated here.
+    Recalculating dot-padding based on each value's length is what caused
+    misalignment before -- a long value (e.g. the Uptime string) collapsed
+    the dots to nothing and dragged the rest of that line out of column.
+    """
     tree = etree.parse(filename)
     root = tree.getroot()
-    justify_format(root, 'age_data', age_data)
-    justify_format(root, 'commit_data', commit_data, 4)
-    justify_format(root, 'star_data', star_data, 4)
-    justify_format(root, 'repo_data', repo_data, 4)
-    justify_format(root, 'follower_data', follower_data, 4)
-    justify_format(root, 'loc_data', loc_data[2], 6)
-    justify_format(root, 'loc_add', '+' + loc_data[0])
-    justify_format(root, 'loc_del', '-' + loc_data[1])
+    find_and_replace(root, 'age_data', age_data)
+    find_and_replace(root, 'commit_data', '{:,}'.format(commit_data))
+    find_and_replace(root, 'star_data', '{:,}'.format(star_data))
+    find_and_replace(root, 'repo_data', '{:,}'.format(repo_data))
+    find_and_replace(root, 'follower_data', '{:,}'.format(follower_data))
+    find_and_replace(root, 'loc_data', loc_data[2])
+    find_and_replace(root, 'loc_add', '+' + loc_data[0])
+    find_and_replace(root, 'loc_del', '-' + loc_data[1])
     tree.write(filename, encoding='utf-8', xml_declaration=True)
-
-
-def justify_format(root, element_id, new_text, length=0):
-    """Updates the element's text and restretches its `_dots` sibling to keep columns aligned."""
-    if isinstance(new_text, int):
-        new_text = '{:,}'.format(new_text)
-    new_text = str(new_text)
-    find_and_replace(root, element_id, new_text)
-    just_len = max(0, length - len(new_text))
-    if just_len <= 2:
-        dot_map = {0: '', 1: ' ', 2: '. '}
-        dot_string = dot_map[just_len]
-    else:
-        dot_string = ' ' + ('.' * just_len) + ' '
-    find_and_replace(root, f"{element_id}_dots", dot_string)
 
 
 def find_and_replace(root, element_id, new_text):
