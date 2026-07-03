@@ -6,21 +6,7 @@ from lxml import etree
 import time
 import hashlib
 
-# ---------------------------------------------------------------------------
-# SETUP (do this once):
-# 1. Create a GitHub fine-grained Personal Access Token with:
-#      Account permissions:    read:Followers, read:Starring, read:Watching
-#      Repository permissions: read:Commit statuses, read:Contents,
-#                               read:Issues, read:Metadata, read:Pull Requests
-# 2. In your repo -> Settings -> Secrets and variables -> Actions, add:
-#      ACCESS_TOKEN = the token from step 1
-#      USER_NAME    = your GitHub username
-# 3. Update BIRTHDAY below (used for the "Uptime" field).
-# 4. Make sure a `cache/` folder exists in the repo (an empty `cache/.gitkeep`
-#    file is enough) — it's used to avoid re-scanning unchanged repos.
-# ---------------------------------------------------------------------------
-
-BIRTHDAY = datetime.datetime(2004, 1, 1)  # <-- set your real birthday
+BIRTHDAY = datetime.datetime(2006, 1, 18)  # <-- set your real birthday
 
 HEADERS = {'authorization': 'token ' + os.environ['ACCESS_TOKEN']}
 USER_NAME = os.environ['USER_NAME']
